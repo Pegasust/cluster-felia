@@ -1,0 +1,18 @@
+---
+# ansible playbook, represents a provisional task
+# like `make build` or `make test` or `make install`
+- hosts: all
+  gather_facts: true
+  roles:
+  - ping
+# - hosts: webapps
+#   become: true # become sudo
+#   tasks:
+#   - name: Copy files to remote host
+#     copy:  # this is a copy module. List of all Ansible modules
+#            # are available in Ansible's docs website
+#       src: dist
+#       dest: /var/www/html
+#       owner: www-data
+#       group: www-data
+#       mode: 0755

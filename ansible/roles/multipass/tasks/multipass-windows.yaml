@@ -1,0 +1,14 @@
+- name: Download multipass
+  win_get_url:
+    url: "{{ windows_path }}"
+    dest: '{{ ansible_env.TEMP }}\multipass-installer.exe'
+    force: no
+
+- name: Setup multipass on Windows
+  ansible.windows.win_package:
+    path: '{{ ansible_env.TEMP }}\multipass-installer.exe'
+    arguments:
+    - /S
+    state: present
+    creates_path: 'C:\Program Files\Multipass\bin'
+
