@@ -7,15 +7,27 @@
 - name: Create HA nodes
   hosts: microk8s_HA
   tasks:
-  - include: vm.yaml
+  - include: vm.yml
     vars:
-      template: "microk8s-master"
+      template: "microk8s-fel-master"
+      group_replicas: 1
 
 - name: Create worker nodes
   hosts: microk8s_WORKERS
   tasks:
-  - include: vm.yaml
+  - include: vm.yml
     vars:
       template: "microk8s-worker"
-      replicas: 2
+      group_replicas: 2
 
+- name: Felia nodes
+  hosts: felia
+  tasks:
+  - include: vm.yml
+    vars:
+      template: "microk8s-master"
+      replicas: 2
+  - include: vm.yml
+    vars:
+      template: "microk8s-worker"
+      replicas: 3
