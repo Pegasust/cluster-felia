@@ -1,0 +1,35 @@
+#cloud-config
+runcmd:
+# install microk8s
+- "iptables -P FORWARD ACCEPT"
+- "chown -f -R ubuntu /home/ubuntu/.kube"
+- "/snap/bin/microk8s.start"
+- "/snap/bin/microk8s.status --wait-ready"
+- "/snap/bin/microk8s.enable dns ingress"
+- "/snap/bin/microk8s.status --wait-ready"
+# - "/snap/bin/microk8s add-node | grep microk8s | grep -v worker$ | sort | uniq >/home/ubuntu/join_cmds.txt"
+
+
+write_files:
+- content: |
+      #!/bin/sh
+      iptables -P FORWARD ACCEPT
+  path: /etc/rc.local
+  permissions: '0755'
+
+groups:
+- microk8s
+
+system_info:
+  default_user:
+    groups: [microk8s]
+
+snap:
+  commands:
+  - "snap install microk8s --classic"
+
+apt_update: true
+apt_upgrade: true
+package_update: true
+package_upgrade: true
+package_reboot_if_required: false
