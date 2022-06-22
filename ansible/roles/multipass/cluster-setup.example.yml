@@ -4,30 +4,24 @@
   tasks:
   - include: multipass.yml
 
-- name: Create HA nodes
-  hosts: microk8s_HA
-  tasks:
-  - include: vm.yml
-    vars:
-      template: "microk8s-fel-master"
-      group_replicas: 1
-
-- name: Create worker nodes
-  hosts: microk8s_WORKERS
-  tasks:
-  - include: vm.yml
-    vars:
-      template: "microk8s-worker"
-      group_replicas: 2
-
-- name: Felia nodes
+- name: microk8s Felia
   hosts: felia
   tasks:
-  - include: vm.yml
-    vars:
-      template: "microk8s-master"
+  - include_tasks: vm.yml
+  vars:
+    multipass_vms:
+    - name: microk8s-master
+      template: microk8s-master
       replicas: 2
-  - include: vm.yml
-    vars:
-      template: "microk8s-worker"
+    - name: microk8s-worker
+      template: microk8s-worker
       replicas: 3
+
+- name: microk8s Fel
+  hosts: fel
+  tasks:
+  - include_tasks: vm.yml
+  vars:
+    multipass_vms:
+    - name: microk8s-master
+      template: microk8s-fel-master

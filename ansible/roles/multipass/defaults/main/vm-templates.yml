@@ -9,11 +9,13 @@ vm_templates:
   mem: 2Gi
   networks: []
   cloud_init: ''
+
 - name: "microk8s-worker"
   vcpu: 2
   disk: 10Gi
   networks: []
   cloud_init: microk8s-worker.yaml
+
 - name: "microk8s-master"
   vcpu: 2
   disk: 20Gi
@@ -21,3 +23,13 @@ vm_templates:
   networks:
   - name: "Guest OS to Host OS"
     mode: auto  # auto/manual
+  cloud_init: microk8s.yml
+
+- name: microk8s-fel-master
+  vcpu: 2
+  disk: 20Gi
+  mem: 3Gi
+  networks:
+  - name: "eth0"
+    mode: auto
+  cloud_init: microk8s.yml
