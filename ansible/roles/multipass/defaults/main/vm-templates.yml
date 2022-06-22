@@ -1,0 +1,23 @@
+# VM creational config
+vm_default_template: default
+vm_templates:
+# template {name: str, vcpu: str, disk: size, mem: size, networks: [network], cloud_init: path}
+# network {name: str, mode: enum["auto","manual"], #mac: str[mac_addr]}
+- name: "default"
+  vcpu: 1
+  disk: 5Gi
+  mem: 2Gi
+  networks: []
+  cloud_init: ''
+- name: "microk8s-worker"
+  vcpu: 2
+  disk: 10Gi
+  networks: []
+  cloud_init: microk8s-worker.yaml
+- name: "microk8s-master"
+  vcpu: 2
+  disk: 20Gi
+  mem: 3Gi
+  networks:
+  - name: "Guest OS to Host OS"
+    mode: auto  # auto/manual

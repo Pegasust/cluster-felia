@@ -1,0 +1,12 @@
+default_replicas: 1
+
+multipass_vms:
+  host_groups:
+  - name: "microk8s_WORKERS"
+    template: "microk8s-worker"
+    replicas: 2
+  - name: "microk8s_HA"
+    template: "microk8s-master"
+  host_addresses:
+  # Use either ansible_host, inventory_hostname, or ip address here
+  - name: felia
