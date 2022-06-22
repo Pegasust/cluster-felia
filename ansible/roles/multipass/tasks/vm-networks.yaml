@@ -1,0 +1,36 @@
+# All tasks that are CRUD to VM networking
+- block:
+  - name: Get Multipass container backend
+    command: "multipass get local.driver"
+    changed_when: false
+    register: mp_local_driver
+    failed_when: mp_local_driver.rc != 0
+  - set_fact: mp_backend="{{ mp_local_driver.stdout }}"
+  - debug: {msg: "Multipass backend: {{ mp_backend }}"}
+  - name: "List networks visible to multipass"
+    command: multipass networks --format json
+    changed_when: false # it's a GET command, doesn't mutate anything
+    register: mp_all_networks
+    failed_when: mp_all_networks.rc != 0
+  become: true
+  when: ansible_os_family != "Windows"
+
+- block:
+  - name: Get Multipass container backend
+    win_command: "multipass get local.driver"
+    changed_when: false
+    register: mp_local_driver
+    failed_when: mp_local_driver.rc != 0
+  - set_fact: mp_backend="{{ mp_local_driver.stdout }}"
+  - debug: {msg: "Multipass backend: {{ mp_backend }}"}
+  - name: "Windows: List networks visible to multipass"
+    win_command: multipass networks --format json
+    changed_when: false
+    register: mp_all_networks
+    failed_when: mp_all_networks.rc != 0
+  when: ansible_os_family == "Windows"
+
+- block:
+  - name: "Show all_networks"
+    debug:
+      msg: "Multipass networks: {{ mp_all_networks.stdout | from_json }}"
