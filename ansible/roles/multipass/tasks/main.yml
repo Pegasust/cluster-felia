@@ -1,7 +1,0 @@
-- name: Setup multipass for Windows
-  import_tasks: multipass-windows.yaml
-  when: ansible_facts['os_family'] == 'Windows'
-
-- name: Setup multipass for apt
-  import_tasks: multipass-apt.yaml
-  when: ansible_facts['os_family'] in ['Debian']|unique

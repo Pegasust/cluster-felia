@@ -1,0 +1,3 @@
+# Multipass settings
+windows_path: https://github.com/canonical/multipass/releases/download/v1.9.2/multipass-1.9.2+win-win64.exe
+linux_version: latest/stable
