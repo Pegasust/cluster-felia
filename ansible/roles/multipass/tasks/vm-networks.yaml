@@ -1,36 +1,55 @@
-# All tasks that are CRUD to VM networking
+# VM Networking:
+# Ensure that the network we require is present/setup as expected
+# Idea: 
+# - Set up multipass container backend if networking not supported
+# - List all networks on the node & check if queried network is in
+# - Error if queried network is not created
+# - Optional: If error, then attempt to set up the network
+
+# Linux-based
 - block:
   - name: Get Multipass container backend
     command: "multipass get local.driver"
     changed_when: false
     register: mp_local_driver
     failed_when: mp_local_driver.rc != 0
-  - set_fact: mp_backend="{{ mp_local_driver.stdout }}"
+  - set_fact: mp_backend="{{ mp_local_driver.stdout_lines[0] }}"
   - debug: {msg: "Multipass backend: {{ mp_backend }}"}
+
+  # Ensure LXD backend for advanced networking
+  - name: Set local.driver to be LXD
+    command: "multipass set local.driver=lxd"
+    register: mp_set_local_driver
+    changed_when: mp_set_local_driver.rc == 0
+    failed_when: mp_set_local_driver.rc != 0
+    when: mp_backend != "lxd"
+  - set_fact: mp_backend="lxd"
+
   - name: "List networks visible to multipass"
     command: multipass networks --format json
     changed_when: false # it's a GET command, doesn't mutate anything
     register: mp_all_networks
     failed_when: mp_all_networks.rc != 0
+  - set_fact: mp_networks="{{ mp_all_networks.stdout | from_json }}"
   become: true
   when: ansible_os_family != "Windows"
 
+# Windows
 - block:
   - name: Get Multipass container backend
     win_command: "multipass get local.driver"
     changed_when: false
     register: mp_local_driver
     failed_when: mp_local_driver.rc != 0
-  - set_fact: mp_backend="{{ mp_local_driver.stdout }}"
+  - set_fact: mp_backend="{{ mp_local_driver.stdout_lines[0] }}"
   - debug: {msg: "Multipass backend: {{ mp_backend }}"}
   - name: "Windows: List networks visible to multipass"
     win_command: multipass networks --format json
     changed_when: false
     register: mp_all_networks
     failed_when: mp_all_networks.rc != 0
+  - set_fact: mp_networks="{{ mp_all_networks.stdout | from_json }}"
   when: ansible_os_family == "Windows"
 
-- block:
-  - name: "Show all_networks"
-    debug:
-      msg: "Multipass networks: {{ mp_all_networks.stdout | from_json }}"
+- name: Show available networks
+  debug: {msg: "Multipass networks: {{ mp_networks }}"}

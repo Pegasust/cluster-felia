@@ -3,9 +3,12 @@
     name: snapd
     state: latest
 
-- name: Setup multipass from snap
+# We need to use LXD to support advanced networking
+- name: From snap, setup multipass, lxd
   snap:
-    name: multipass
+    name: 
+    - multipass
+    - lxd
     channel: "{{ linux_version }}"
     state: present
     classic: yes
