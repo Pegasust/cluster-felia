@@ -1,0 +1,21 @@
+---
+- name: Setup multipass
+  hosts: multipass:microk8s:microk8s_HA:microk8s_WORKERS
+  tasks:
+  - include: multipass.yml
+
+- name: Create HA nodes
+  hosts: microk8s_HA
+  tasks:
+  - include: vm.yaml
+    vars:
+      template: "microk8s-master"
+
+- name: Create worker nodes
+  hosts: microk8s_WORKERS
+  tasks:
+  - include: vm.yaml
+    vars:
+      template: "microk8s-worker"
+      replicas: 2
+
