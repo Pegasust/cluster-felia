@@ -1,2 +1,30 @@
-windows_path: https://github.com/canonical/multipass/releases/download/v1.9.2/multipass-1.9.2+win-win64.exe
-linux_version: latest/stable
+
+
+multipass_vms:
+- name: microk8s-worker
+  vcpu: 2     # Optional, default: 1
+  disk: 10Gi
+  mem: 2Gi
+  network: # see https://multipass.run/docs/additional-networks
+  - "Network value with space":
+    mode: auto # auto/manual
+    # mac: 00:00:5e:00:53:af # TODO: not supported: how to make it iterable?
+                             # MAC address mask maybe?
+  cloud_init: microk8s-worker.yaml
+  host_groups:
+  - name: "microk8s_WORKERS"
+    replicas: 1  # optional: default_replicas
+  host_override:
+  - host: 192.168.0.39
+    replicas: 3
+
+- name: microk8s-master
+  vcpu: 2
+  disk: 20Gi
+  mem: 3Gi
+  host_groups:
+  - name: "microk8s_HA"
+  host_override:
+  - host: 192.168.0.39
+    replicas: 2
+  
