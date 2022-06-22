@@ -1,5 +1,3 @@
-
-
 multipass_vms:
 - name: microk8s-worker
   vcpu: 2     # Optional, default: 1
