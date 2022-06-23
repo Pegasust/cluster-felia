@@ -1,0 +1,3 @@
+multipass_vms:
+- name: microk8s-master
+  template: microk8s-fel-master

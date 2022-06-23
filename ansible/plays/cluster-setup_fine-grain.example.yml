@@ -1,0 +1,71 @@
+---
+- name: Setup multipass
+  hosts: multipass:microk8s:microk8s_HA:microk8s_WORKERS
+  tasks:
+  - include_tasks: tasks/multipass.yml
+
+- name: microk8s Felia
+  hosts: felia
+  tasks:
+  - include_tasks: tasks/vm-instances.yaml
+  vars:
+    # coarse grain, convertible to fine-grain
+    multipass_vms:
+    - name: microk8s-master
+      template: microk8s-master
+      replicas: 2
+    - name: microk8s-worker
+      template: microk8s-worker
+      replicas: 3
+    # fine grain
+    multipass_vm_instances:
+    - name: microk8s-master0
+      vcpu: 2
+      disk: 20Gi
+      mem: 3Gi
+      networks:
+      - name: "Guest OS to Host OS"
+        mode: auto 
+      cloud_init: microk8s.yml
+      state: running
+    - name: microk8s-master1
+      vcpu: 2
+      disk: 20Gi
+      mem: 3Gi
+      networks:
+      - name: "Guest OS to Host OS"
+        mode: auto
+      cloud_init: microk8s.yml
+      state: running
+    - name: microk8s-worker0
+      vcpu: 2
+      disk: 10Gi
+      networks: []
+      mem: 2Gi
+      cloud_init: microk8s-worker.yaml
+      state: running
+    - name: microk8s-worker1
+      vcpu: 2
+      disk: 10Gi
+      networks: []
+      mem: 2Gi
+      cloud_init: microk8s-worker.yaml
+      state: running
+    - name: microk8s-worker2
+      vcpu: 2
+      disk: 10Gi
+      networks: []
+      mem: 2Gi
+      cloud_init: microk8s-worker.yaml
+      state: running
+
+
+
+# - name: microk8s Fel
+#   hosts: fel
+#   tasks:
+#   - include_tasks: tasks/vm.yml
+#   vars:
+#     multipass_vms:
+#     - name: microk8s-master
+#       template: microk8s-fel-master

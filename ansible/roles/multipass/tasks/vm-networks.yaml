@@ -29,7 +29,10 @@
     command: multipass networks --format json
     changed_when: false # it's a GET command, doesn't mutate anything
     register: mp_all_networks
-    failed_when: mp_all_networks.rc != 0
+    retries: 5
+    delay: 5
+    until: mp_all_networks.rc != 0
+  
   - set_fact: mp_networks="{{ mp_all_networks.stdout | from_json }}"
   become: true
   when: ansible_os_family != "Windows"

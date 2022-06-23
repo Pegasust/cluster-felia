@@ -2,12 +2,12 @@
 - name: Setup multipass
   hosts: multipass:microk8s:microk8s_HA:microk8s_WORKERS
   tasks:
-  - include: multipass.yml
+  - include_tasks: tasks/multipass.yml
 
 - name: microk8s Felia
   hosts: felia
   tasks:
-  - include_tasks: vm.yml
+  - include_tasks: tasks/vm.yml
   vars:
     multipass_vms:
     - name: microk8s-master
@@ -20,7 +20,7 @@
 - name: microk8s Fel
   hosts: fel
   tasks:
-  - include_tasks: vm.yml
+  - include_tasks: tasks/vm.yml
   vars:
     multipass_vms:
     - name: microk8s-master
