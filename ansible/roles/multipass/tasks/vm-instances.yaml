@@ -29,9 +29,10 @@
 # state:
 # See https://github.com/canonical/multipass/blob/80938d0f556060ecab0ec4020fa71efa62ceaf86/src/rpc/multipass.proto#L177
 # - stopped: vm is effectively shutdown
-# - suspended: vm is effectively slept
+# - suspended: vm is effectively slept; maybe to preserve NRG
 # LIMITATIONS: multipass purge not supported
 
+# TODO: replace complications on mp_instances|selectattr... to a single set_fact
 
 # Windows
 - block:
@@ -41,30 +42,108 @@
     changed_when: false
     failed_when: mp_list.rc != 0
     check_mode: false
-  - set_fact: mp_instances={{ mp_list.stdout | from_json }}
+  - set_fact: mp_instances_out="{{ mp_list.stdout | from_json }}"
+  - set_fact: mp_instances="{{ mp_instances_out.list }}"
     check_mode: false
-
-  - name: <echo> Create new multipass instances
-    debug: 
-      msg: >
-        multipass launch 
-        --cpus "{{ item.vcpu }}" 
-        --disk "{{ item.disk }}" 
-        --mem "{{ item.mem }}" 
-        --name "{{ item.name }}"
+    # current_state: running | stopped | deleted | suspended | not_exist
+  - name: Initialize current_state
+    set_fact: 
+      current_state: {}
+  - name: Propagate current_state 
+    set_fact: 
+      current_state: >
+        {{ current_state| combine({
+          item.name: 
+            (
+              (mp_instances| selectattr('name','==', item.name))[0]| 
+                default({'state':'not_exist'})
+            ).state 
+        }) }}
+      # "{{ ((mp_instances|selectattr('name', '==', item.name))[0]|default({'state':'not_exist'})).state }}"
     check_mode: false
     loop: "{{ multipass_vm_instances }}"
 
-  - name: Create new multipass instances
-    win_command: >
-      multipass launch 
-      --cpus "{{ item.vcpu }}" 
-      --disk "{{ item.disk }}" 
-      --mem "{{ item.mem }}" 
+  # Create new vm if:
+  # - vm not yet created (item.name not in mp_instances.name)
+  - name: Launch new multipass instances
+    win_command: multipass launch
+      --cpus "{{ item.vcpu }}"
+      --disk "{{ item.disk }}"
+      --mem "{{ item.mem }}"
       --name "{{ item.name }}"
+      {% if item.cloud_init is defined %}
+      --cloud-init "{{item.cloud_init|trim}}"
+      {% endif %}
+      {% for net in item.networks %}
+      --network name="{{ net.name|trim }}",mode="{{ net.mode|trim }}"
+      {% endfor %}
     register: mp_launch
-    # change_when: todo
-    # failed_when: todo
+    # changed_when: todo
+    failed_when: mp_launch.rc != 0
+    check_mode: true
+    # active: not yet existed
+    # ignore: queried state is deleted
+    when: current_state[item.name] == 'not_exist' and item.state|lower != 'deleted'
+    loop: "{{ multipass_vm_instances }}"
+  
+  # Recover a vm if it's found to be deleted
+  - name: Recover deleted multipass instances
+    win_command: multipass recover "{{ item.name }}"
+    register: mp_recover
+    # changed_when: todo
+    failed_when: mp_recover.rc != 0
+    when: current_state[item.name] == 'deleted' and item.state|lower != 'deleted'
+    loop: "{{ multipass_vm_instances }}"
+    check_mode: true
+
+  # For now, can't change the machine configuration
+  # imagine each instance follows a "template"
+  # representing a unit of horizontal scale
+  # TODO: use `multipass get <node>.{cpus,disk,mem}`
+  # and identify diffs. Sounds complicated enough
+  # for a module
+
+  # Now, assume that the VMs are properly configured
+
+  - name: Ensure vms running for non-running & stopped->suspended
+    win_command: multipass start "{{ item.name }}"
+    register: mp_start
+    # changed_when: todo
+    failed_when: mp_start.rc != 0
+    when: >
+      (item.state|lower == 'running' and 
+      current_state[item.name] != 'running') or
+      (item.state|lower == 'suspended' and
+      current_state[item.name] == 'stopped')
+
+    loop: "{{ multipass_vm_instances }}"
+    check_mode: true
+  
+  # TODO: tricky: what if the vm is initially stopped?
+  # Idea: inject multipass start above
+  # then we will suspend at this part
+  # TODO: check that this trick works well
+  # multipass suspend: 
+  # - stopped  ->0
+  # - running  ->0
+  # - suspended->0
+  - name: Ensure vms suspended for non-suspended
+    win_command: multipass suspend "{{ item.name }}"
+    register: mp_suspend
+    changed_when: true # since the when condition goes thru, guaranteed change.
+    failed_when: mp_suspend.rc != 0
+    when: item.state|lower == "suspended" and
+      current_state[item.name] is not in (['suspended','stopped']|uniq)
+    check_mode: true
+    loop: "{{ multipass_vm_instances }}"
+
+  - name: Ensure vms stopped for non-stopped
+    win_command: multipass stop "{{ item.name }}"
+    register: mp_stop
+    changed_when: true
+    failed_when: mp_stop.rc
+    when: item.state|lower == "stopped" and
+      current_state[item.name] != 'stopped'
     check_mode: true
     loop: "{{ multipass_vm_instances }}"
   when: ansible_os_family == 'Windows'
@@ -84,8 +163,8 @@
 #   when: ansible_os_family != 'Windows'
 #   become: true
 
-- name: "Show desired vms to be maintained in running state"
-  debug: {msg: "desired_vms {{ desired_vms }}"}
+# - name: "Show desired vms to be maintained in running state"
+#   debug: {msg: "desired_vms {{ desired_vms }}"}
 
 - name: "Show all vms exists in the node"
   debug: {msg: "all vms: {{ mp_instances }}"}

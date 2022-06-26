@@ -2,7 +2,7 @@
   ansible.builtin.package:
     name: snapd
     state: latest
-  check_mode: true
+  when: not ansible_check_mode
 
 # We need to use LXD to support advanced networking
 - name: From snap, setup multipass, lxd
@@ -13,5 +13,5 @@
     channel: "{{ linux_version }}"
     state: present
     classic: yes
-  check_mode: true
+  when: not ansible_check_mode
   

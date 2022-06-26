@@ -3,7 +3,7 @@
     url: "{{ windows_path }}"
     dest: '{{ ansible_env.TEMP }}\multipass-installer.exe'
     force: no
-  check_mode: true
+  when: not ansible_check_mode
 
 - name: Setup multipass on Windows
   ansible.windows.win_package:
@@ -12,4 +12,4 @@
     - /S
     state: present
     creates_path: 'C:\Program Files\Multipass\bin'
-  check_mode: true
+  when: not ansible_check_mode

@@ -1,0 +1,5 @@
+- name: Prepare multipass
+  include_tasks: multipass.yml
+
+- name: Prepare VMs
+  include_tasks: vm.yml
