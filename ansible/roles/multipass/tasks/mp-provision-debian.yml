@@ -1,0 +1,87 @@
+- block:
+  # Create a new vm if vm is not yet created
+  - name: Launch new multipass instances
+    command: multipass launch
+      --cpus "{{ item.vcpu }}"
+      --disk "{{ item.disk }}"
+      --mem "{{ item.mem }}"
+      --name "{{ item.name }}"
+      {% if item.cloud_init is defined %}
+      --cloud-init "{{item.cloud_init|trim}}"
+      {% endif %}
+      {% for net in item.networks %}
+      --network name="{{ net.name|trim }}",mode="{{ net.mode|trim }}"
+      {% endfor %}
+    register: mp_launch
+    # changed_when: todo
+    failed_when: mp_launch.rc != 0
+    # active: not yet existed
+    # ignore: queried state is deleted
+    when:
+    - not ansible_check_mode
+    - current_state[item.name] == 'not_exist'
+    - item.state|lower != 'deleted'
+    loop: "{{ multipass_vm_instances }}"
+
+  # Recover a vm if it's found to be deleted
+  - name: Recover deleted multipass instances
+    command: multipass recover "{{ item.name }}"
+    register: mp_recover
+    # changed_when: todo
+    failed_when: mp_recover.rc != 0
+    when: 
+    - not ansible_check_mode
+    - current_state[item.name] == 'deleted'
+    - item.state|lower != 'deleted'
+    loop: "{{ multipass_vm_instances }}"
+
+  # For now, can't change the machine configuration
+  # imagine each instance follows a "template"
+  # representing a unit of horizontal scale
+  # TODO: use `multipass get <node>.{cpus,disk,mem}`
+  # and identify diffs. Sounds complicated enough
+  # for a module
+
+  # Now, assume that the VMs are properly configured
+
+  - name: Ensure vms running for non-running & stopped->suspended
+    command: multipass start "{{ item.name }}"
+    register: mp_start
+    # changed_when: todo
+    failed_when: mp_start.rc != 0
+    when: >
+      (item.state|lower == 'running' and 
+      current_state[item.name] != 'running') or
+      (item.state|lower == 'suspended' and
+      current_state[item.name] == 'stopped')
+
+    loop: "{{ multipass_vm_instances }}"
+
+  # TODO: tricky: what if the vm is initially stopped?
+  # Idea: inject multipass start above
+  # then we will suspend at this part
+  # TODO: check that this trick works well
+  # multipass suspend: 
+  # - stopped  ->0
+  # - running  ->0
+  # - suspended->0
+  - name: Ensure vms suspended for non-suspended
+    command: multipass suspend "{{ item.name }}"
+    register: mp_suspend
+    changed_when: true # since the when condition goes thru, guaranteed change.
+    failed_when: mp_suspend.rc != 0
+    when: 
+    - item.state|lower == "suspended"
+    - current_state[item.name] is not in (['suspended','stopped']|uniq)
+    loop: "{{ multipass_vm_instances }}"
+
+  - name: Ensure vms stopped for non-stopped
+    command: multipass stop "{{ item.name }}"
+    register: mp_stop
+    changed_when: true
+    failed_when: mp_stop.rc
+    when: 
+    - item.state|lower == "stopped"
+    - current_state[item.name] != 'stopped'
+    loop: "{{ multipass_vm_instances }}"
+  become: true

@@ -1,1 +1,2 @@
 - include_tasks: vm-instances.yaml
+  when: multipass_vm_instances is defined

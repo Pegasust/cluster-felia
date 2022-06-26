@@ -1,0 +1,8 @@
+- block:
+  - name: Get all created multipass instances
+    command: multipass list --format json
+    register: mp_list
+    changed_when: false
+    failed_when: mp_list.rc != 0
+    check_mode: false
+  become: true
