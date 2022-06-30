@@ -1,35 +1,30 @@
-# VM creational config
-vm_default_template: default
+# Managed by Jsonnet. See $ROOT/coarse_config/templates.jsonnet
 vm_templates:
-# template {name: str, vcpu: str, disk: size, mem: size, networks: [network], cloud_init: path}
-# network {name: str, mode: enum["auto","manual"], #mac: str[mac_addr]}
-- name: "default"
-  vcpu: 1
-  disk: 5Gi
-  mem: 2Gi
-  networks: []
-  cloud_init: ''
-
-- name: "microk8s-worker"
-  vcpu: 2
-  disk: 10Gi
-  networks: []
-  cloud_init: microk8s-worker.yaml
-
-- name: "microk8s-master"
-  vcpu: 2
-  disk: 20Gi
-  mem: 3Gi
-  networks:
-  - name: "Guest OS to Host OS"
-    mode: auto  # auto/manual
-  cloud_init: microk8s.yml
-
-- name: microk8s-fel-master
-  vcpu: 2
-  disk: 20Gi
-  mem: 3Gi
-  networks:
-  - name: "eth0"
-    mode: auto
-  cloud_init: microk8s.yml
+  default:
+    cloud_init: ""
+    disk: 5G
+    mem: 2G
+    networks: []
+    vcpu: 1
+  microk8s-fel-master:
+    cloud_init: microk8s.yaml
+    disk: 20G
+    mem: 3G
+    networks:
+      - mode: auto
+        name: eth0
+    vcpu: 2
+  microk8s-master:
+    cloud_init: microk8s.yaml
+    disk: 20G
+    mem: 3G
+    networks:
+      - mode: auto
+        name: Guest OS to Host OS
+    vcpu: 2
+  microk8s-worker:
+    cloud_init: microk8s-worker.yaml
+    disk: 10G
+    mem: 2G
+    networks: []
+    vcpu: 2

@@ -1,50 +1,57 @@
-# coarse grain, convertible to fine-grain
-multipass_vms:
-- name: microk8s-master
-  template: microk8s-master
-  replicas: 2
-- name: microk8s-worker
-  template: microk8s-worker
-  replicas: 3
-
-# fine grain
+# Managed by Jsonnet. See $ROOT/coarse_config/felia.jsonnet
 multipass_vm_instances:
-- name: microk8s-master0
-  vcpu: 2
-  disk: 20G
-  mem: 3G
-  networks:
-  - name: "Guest OS to Host OS"
-    mode: auto 
-  cloud_init: microk8s.yaml
-  state: running
-- name: microk8s-master1
-  vcpu: 2
-  disk: 20G
-  mem: 3G
-  networks:
-  - name: "Guest OS to Host OS"
-    mode: auto
-  cloud_init: microk8s.yaml
-  state: running
-- name: microk8s-worker0
-  vcpu: 2
-  disk: 10G
-  networks: []
-  mem: 2G
-  cloud_init: microk8s-worker.yaml
-  state: running
-- name: microk8s-worker1
-  vcpu: 2
-  disk: 10G
-  networks: []
-  mem: 2G
-  cloud_init: microk8s-worker.yaml
-  state: running
-- name: microk8s-worker2
-  vcpu: 2
-  disk: 10G
-  networks: []
-  mem: 2G
-  cloud_init: microk8s-worker.yaml
-  state: running
+  - cloud_init: microk8s.yaml
+    disk: 20G
+    mem: 3G
+    name: microk8s-master0
+    networks:
+      - mode: auto
+        name: Guest OS to Host OS
+    state: running
+    vcpu: 2
+  - cloud_init: microk8s.yaml
+    disk: 20G
+    mem: 3G
+    name: microk8s-master1
+    networks:
+      - mode: auto
+        name: Guest OS to Host OS
+    state: running
+    vcpu: 2
+  - cloud_init: microk8s.yaml
+    disk: 20G
+    mem: 3G
+    name: microk8s-master2
+    networks:
+      - mode: auto
+        name: Guest OS to Host OS
+    state: running
+    vcpu: 2
+  - cloud_init: microk8s-worker.yaml
+    disk: 10G
+    mem: 2G
+    name: microk8s-worker0
+    networks: []
+    state: running
+    vcpu: 2
+  - cloud_init: microk8s-worker.yaml
+    disk: 10G
+    mem: 2G
+    name: microk8s-worker1
+    networks: []
+    state: running
+    vcpu: 2
+  - cloud_init: microk8s-worker.yaml
+    disk: 10G
+    mem: 2G
+    name: microk8s-worker2
+    networks: []
+    state: running
+    vcpu: 2
+  - cloud_init: microk8s-worker.yaml
+    disk: 10G
+    mem: 2G
+    name: microk8s-worker3
+    networks: []
+    state: running
+    vcpu: 2

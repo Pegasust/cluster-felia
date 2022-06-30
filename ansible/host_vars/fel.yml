@@ -1,12 +1,20 @@
-multipass_vms:
-- name: microk8s-master
-  template: microk8s-fel-master
-
+# Managed by Jsonnet. See $ROOT/coarse_config/fel.jsonnet
 multipass_vm_instances:
-- name: microk8s-master0
-  vcpu: 2
-  disk: 80G
-  mem: 4G
-  networks: []
-  cloud_init: microk8s.yaml
-  state: running
+  - cloud_init: microk8s.yaml
+    disk: 20G
+    mem: 3G
+    name: microk8s-fel-master0
+    networks:
+      - mode: auto
+        name: eth0
+    state: running
+    vcpu: 2
+  - cloud_init: microk8s.yaml
+    disk: 20G
+    mem: 3G
+    name: microk8s-fel-master1
+    networks:
+      - mode: auto
+        name: eth0
+    state: running
+    vcpu: 2
