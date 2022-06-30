@@ -6,44 +6,45 @@ multipass_vms:
 - name: microk8s-worker
   template: microk8s-worker
   replicas: 3
+
 # fine grain
 multipass_vm_instances:
 - name: microk8s-master0
   vcpu: 2
-  disk: 20Gi
-  mem: 3Gi
+  disk: 20G
+  mem: 3G
   networks:
   - name: "Guest OS to Host OS"
     mode: auto 
-  cloud_init: microk8s.yml
+  cloud_init: microk8s.yaml
   state: running
 - name: microk8s-master1
   vcpu: 2
-  disk: 20Gi
-  mem: 3Gi
+  disk: 20G
+  mem: 3G
   networks:
   - name: "Guest OS to Host OS"
     mode: auto
-  cloud_init: microk8s.yml
+  cloud_init: microk8s.yaml
   state: running
 - name: microk8s-worker0
   vcpu: 2
-  disk: 10Gi
+  disk: 10G
   networks: []
-  mem: 2Gi
+  mem: 2G
   cloud_init: microk8s-worker.yaml
   state: running
 - name: microk8s-worker1
   vcpu: 2
-  disk: 10Gi
+  disk: 10G
   networks: []
-  mem: 2Gi
+  mem: 2G
   cloud_init: microk8s-worker.yaml
   state: running
 - name: microk8s-worker2
   vcpu: 2
-  disk: 10Gi
+  disk: 10G
   networks: []
-  mem: 2Gi
+  mem: 2G
   cloud_init: microk8s-worker.yaml
   state: running
