@@ -1,3 +1,4 @@
 .vscode/dryrun.log
 .vscode/configurationCache.log
 .vscode/targets.log
+*.ansible_facts
