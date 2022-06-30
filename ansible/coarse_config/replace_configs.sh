@@ -1,10 +1,17 @@
 #!/usr/bin/env bash
 
 to_yaml() {
-    echo "# Managed by Jsonnet. See \$ROOT/coarse_config/$1" >$2
-    # to_yaml src.jsonnet dest.yml
-    yq e -P <(jsonnet $1) >>$2
-    echo "Created $2"
+  TEMP=$(mktemp)
+	echo "# Managed by Jsonnet. See \$ROOT/coarse_config/$1" >$TEMP
+	# to_yaml src.jsonnet dest.yml
+	yq e -P <(jsonnet $1) >>$TEMP
+  DIFF=$(sdiff $TEMP $2)
+  if [[ $? -eq 0 ]]; then
+    echo "${2}: OK, no difference"
+  else
+    cp $TEMP $2
+	  echo "${2}: OK, changed"
+  fi
 }
 
 to_yaml fel.jsonnet ../host_vars/fel.yml
