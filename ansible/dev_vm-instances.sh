@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-ansible-playbook -v --check -i inventory/homelab.ini cluster-setup_fine-grain.example.yml
+ansible-playbook -v -i inventory/homelab.ini cluster-setup_fine-grain.example.yml
