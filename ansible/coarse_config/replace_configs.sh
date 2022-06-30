@@ -5,12 +5,13 @@ to_yaml() {
 	echo "# Managed by Jsonnet. See \$ROOT/coarse_config/$1" >$TEMP
 	# to_yaml src.jsonnet dest.yml
 	yq e -P <(jsonnet $1) >>$TEMP
-  DIFF=$(sdiff $TEMP $2)
+  DIFF=$(sdiff -bBWs $TEMP $2)
   if [[ $? -eq 0 ]]; then
     echo "${2}: OK, no difference"
   else
     cp $TEMP $2
-	  echo "${2}: OK, changed"
+	  echo "${2}: OK, changed:"
+    echo "$DIFF"
   fi
 }
 
