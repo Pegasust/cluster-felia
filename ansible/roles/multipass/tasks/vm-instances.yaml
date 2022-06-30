@@ -32,13 +32,9 @@
 # - suspended: vm is effectively slept; maybe to preserve NRG
 # LIMITATIONS: multipass purge not supported
 
-# TODO: replace complications on mp_instances|selectattr... to a single set_fact
-
 - name: Get all created multipass instances
-  include_tasks: "mp-all-instances-{{ ansible_os_family|lower }}.yml"
-- set_fact: mp_instances_out="{{ mp_list.stdout | from_json }}"
-- set_fact: mp_instances="{{ mp_instances_out.list }}"
-  check_mode: false
+  include_tasks: mp-all-instances.yml
+
   # current_state: running | stopped | deleted | suspended | not_exist
 - name: Initialize current_state
   set_fact: 
@@ -51,7 +47,7 @@
           (
             (mp_instances| selectattr('name','==', item.name))[0]| 
               default({'state':'not_exist'})
-          ).state 
+          ).state | lower
       }) }}
     # "{{ ((mp_instances|selectattr('name', '==', item.name))[0]|default({'state':'not_exist'})).state }}"
   check_mode: false
@@ -60,6 +56,10 @@
 - name: Provision
   include_tasks: "mp-provision-{{ ansible_os_family|lower }}.yml"
   when: not ansible_check_mode
+
+# Check & output results
+- name: Reacquire multipass instances
+  include_tasks: mp-all-instances.yml
 
 - name: "Show all vms exists in the node"
   debug: {msg: "all vms: {{ mp_instances }}"}
