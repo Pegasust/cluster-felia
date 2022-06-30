@@ -1,4 +1,12 @@
+# Note: Any changes to this file should also reflect
+# mp-provision-debian.yml
 - block:
+  - name: Copy cloud-init file to host
+    ansible.builtin.copy:
+      src: "{{ item }}"
+      dest: "{{ ansible_env.TEMP|default('.') }}/{{ item }}"
+    loop: "{{ multipass_vm_instances|map(attribute='cloud_init')|map('trim')|unique }}"
+
   # Create a new vm if vm is not yet created
   - name: Launch new multipass instances
     win_command: multipass launch
@@ -7,7 +15,7 @@
       --mem "{{ item.mem }}"
       --name "{{ item.name }}"
       {% if item.cloud_init is defined %}
-      --cloud-init "{{item.cloud_init|trim}}"
+      --cloud-init "{{ item.cloud_init|trim }}"
       {% endif %}
       {% for net in item.networks %}
       --network name="{{ net.name|trim }}",mode="{{ net.mode|trim }}"
@@ -77,8 +85,18 @@
     win_command: multipass stop "{{ item.name }}"
     register: mp_stop
     changed_when: true
-    failed_when: mp_stop.rc
+    failed_when: mp_stop.rc != 0
     when: 
     - item.state|lower == "stopped"
     - current_state[item.name] != 'stopped'
+    loop: "{{ multipass_vm_instances }}"
+
+  - name: Delete vms that declare to be 'deleted'
+    win_command: multipass delete "{{ item.name }}"
+    register: mp_delete
+    changed_when: true
+    failed_when: mp_delete.rc != 0
+    when:
+    - item.state|lower == "deleted"
+    - current_state[item.name] is not in (["deleted", "not_exist"]|unique)
     loop: "{{ multipass_vm_instances }}"

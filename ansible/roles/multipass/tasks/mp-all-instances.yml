@@ -1,0 +1,8 @@
+- block:
+  - name: OS-specific multipass list
+    include_tasks: "mp-all-instances-{{ ansible_os_family|lower }}.yml"
+  - name: Parse to JSON 
+    set_fact: mp_instances_out="{{ mp_list.stdout | from_json }}"
+  - name: Remove unnecessary nested list
+    set_fact: mp_instances="{{ mp_instances_out.list }}"
+  check_mode: false
