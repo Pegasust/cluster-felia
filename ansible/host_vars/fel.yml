@@ -3,18 +3,9 @@ multipass_vm_instances:
   - cloud_init: microk8s.yaml
     disk: 20G
     mem: 3G
-    name: microk8s-fel-master0
+    name: microk8s-master0
     networks:
       - mode: auto
         name: eth0
-    state: running
-    vcpu: 2
-  - cloud_init: microk8s.yaml
-    disk: 20G
-    mem: 3G
-    name: microk8s-fel-master1
-    networks:
-      - mode: auto
-        name: eth0
-    state: running
+    state: deleted
     vcpu: 2

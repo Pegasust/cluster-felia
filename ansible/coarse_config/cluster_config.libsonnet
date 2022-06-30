@@ -11,12 +11,13 @@
 local templates = import 'templates.jsonnet';
 
 {
-	coarse(template, replicas=1, state="running")::
+	coarse(template, replicas=1, name=null, state="running")::
 		{
-			[template + v]:
+			[(if name == null then template else name) + v]:
 				templates.vm_templates[template]
 				+ {"state": state}
-			for v in std.range(0, replicas)
+			// std.range is inclusive!
+			for v in std.range(0, replicas-1)
 		},
 	fine_grain(obj):: obj,
 	output(all_fine_grained, state=null)::

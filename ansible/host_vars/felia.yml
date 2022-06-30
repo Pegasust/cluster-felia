@@ -7,7 +7,7 @@ multipass_vm_instances:
     networks:
       - mode: auto
         name: Guest OS to Host OS
-    state: running
+    state: deleted
     vcpu: 2
   - cloud_init: microk8s.yaml
     disk: 20G
@@ -16,42 +16,26 @@ multipass_vm_instances:
     networks:
       - mode: auto
         name: Guest OS to Host OS
-    state: running
-    vcpu: 2
-  - cloud_init: microk8s.yaml
-    disk: 20G
-    mem: 3G
-    name: microk8s-master2
-    networks:
-      - mode: auto
-        name: Guest OS to Host OS
-    state: running
+    state: deleted
     vcpu: 2
   - cloud_init: microk8s-worker.yaml
     disk: 10G
     mem: 2G
     name: microk8s-worker0
     networks: []
-    state: running
+    state: deleted
     vcpu: 2
   - cloud_init: microk8s-worker.yaml
     disk: 10G
     mem: 2G
     name: microk8s-worker1
     networks: []
-    state: running
+    state: deleted
     vcpu: 2
   - cloud_init: microk8s-worker.yaml
     disk: 10G
     mem: 2G
     name: microk8s-worker2
     networks: []
-    state: running
-    vcpu: 2
-  - cloud_init: microk8s-worker.yaml
-    disk: 10G
-    mem: 2G
-    name: microk8s-worker3
-    networks: []
-    state: running
+    state: deleted
     vcpu: 2
